@@ -22,10 +22,12 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
     
     body = json.loads(event['body'])
+    print(body)
 
     # https://api.slack.com/events/url_verification
     # Just return the challenge for url_verification
-    if body['type'] == 'url_verification':
+    type = body['type']
+    if type == 'url_verification':
         return {
             'statusCode': '200',
             'body': body['challenge'],

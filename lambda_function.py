@@ -1,3 +1,4 @@
+import json
 import requests
 from huggingface_hub.inference_api import InferenceApi
 
@@ -27,10 +28,12 @@ def dallemini(prompt):
     print(response)
     return response.json()
 
-def lambda_handler(event, context):   
-    response = requests.get("https://www.google.com/")
-    print(response.text)
-    return response.text
+def lambda_handler(event, context):
+    print(f"Received event:\n{event}\nWith context:\n{context}") 
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
 
 if __name__ == '__main__':
     

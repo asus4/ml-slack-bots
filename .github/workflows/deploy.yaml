@@ -1,0 +1,29 @@
+name: Deploy to Lambda
+on:
+  push:
+    branches:    
+      - main
+jobs:
+  deploy_zip:
+    name: Deploy to Lambda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Setup lambda_package.zip
+        run: bash .github/workflows/make_package.sh
+      - name: default deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_REGION }}
+          zip_file: lambda_package.zip
+          memory_size: 256
+          timeout: 900
+          handler: foobar
+          role: arn:aws:iam::xxxxxxxxxxx:role/test1234
+          runtime: python3.9
+          dry_run: true

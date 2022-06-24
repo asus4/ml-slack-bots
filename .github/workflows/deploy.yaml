@@ -3,6 +3,7 @@ on:
   push:
     branches:    
       - main
+  workflow_dispatch:
 jobs:
   deploy_zip:
     name: Deploy to Lambda
@@ -27,5 +28,5 @@ jobs:
           handler: lambda_handler
           role: ${{ secrets.AWS_ROLE }}
           runtime: python3.9
-          dry_run: true
+          dry_run: false
           environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }}

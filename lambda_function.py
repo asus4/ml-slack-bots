@@ -1,50 +1,31 @@
 import json
-import requests
-from huggingface_hub.inference_api import InferenceApi
+import logging
 
-from app import Config
 from app.text2image import latent_diffusion
 
-inference = InferenceApi(repo_id="bert-base-uncased", token=Config.HUGGINGFACE_API_TOKEN)
-print(inference)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
-def distilbert_base_uncased(payload):
-    headers = {
-        "Authorization": f"Bearer {Config.HUGGINGFACE_API_TOKEN}"
+def respond(err, res=None):
+    ret = {
+        'statusCode': '200',
+        'body': json.dumps(res, ensure_ascii=False),
+        'headers': {
+            'Content-Type': 'application/json',
+        },
     }
-    API_URL = f"https://api-inference.huggingface.co/models/distilbert-base-uncased"
-    response = requests.post(API_URL, headers=headers, json=payload)
-    return response.json()
+    logger.info(f"Return: {ret}")
+    return ret
 
-def dallemini(prompt):
-    headers = {
-        "Authorization": f"Bearer {Config.HUGGINGFACE_API_TOKEN}"
-    }
-    API_URL = f"https://hf.space/embed/eetn/DALL-E/+/api/predict/"
-    json = {
-        "data": [ prompt ]
-    }
-    response = requests.post(API_URL, headers=headers, json=json)
-    print(response)
-    return response.json()
 
 def lambda_handler(event, context):
-    print(f"Received event:\n{event}\nWith context:\n{context}") 
-    return {
-        'statusCode': 200,
-        'body': json.dumps('Hello from Lambda!')
-    }
+    logger.info(f"Received event: {json.dumps(event)}")
+    payload = {}
+    if event.get('body'):
+        payload = event['body']
+    return respond(None, payload)
 
 if __name__ == '__main__':
-    
-    # data = distilbert_base_uncased("The goal of life is [MASK].")
-    # print(data)
-
-    # data = dallemini("sunset over a lake in the mountains")
-    # print(data)
 
     data = latent_diffusion("sunset over a lake in the mountains")
     print(data)
-
-    # result = lambda_handler(None, None)
-    # print(result)

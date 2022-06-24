@@ -20,10 +20,19 @@ def respond(err, res=None):
 
 def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
-    payload = {}
-    if event.get('body'):
-        payload = event['body']
-    return respond(None, payload)
+    
+    body = json.loads(event['body'])
+
+    # https://api.slack.com/events/url_verification
+    # Just return the challenge for url_verification
+    if body['type'] == 'url_verification':
+        return {
+            'statusCode': '200',
+            'body': body['challenge'],
+            'headers': { 'Content-Type': 'text/plain' },
+        }
+    return respond(None, body)
+
 
 if __name__ == '__main__':
 

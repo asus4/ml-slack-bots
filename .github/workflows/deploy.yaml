@@ -22,7 +22,7 @@ jobs:
           aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           function_name: ml_playground
-          description: Slack Bots that runs ML tasks via Hugging Face API
+          description: "aws:states:opt-out"
           zip_file: lambda_package.zip
           memory_size: 256
           timeout: 900

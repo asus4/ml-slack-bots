@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.9'
       - name: Setup lambda_package.zip
-        run: bash .github/workflows/make_package.sh
+        run: bash make_package.sh
       - name: default deploy
         uses: appleboy/lambda-action@master
         with:

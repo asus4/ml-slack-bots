@@ -26,7 +26,7 @@ jobs:
           memory_size: 256
           timeout: 900
           handler: lambda_handler
-          role: ${{ secrets.AWS_ROLE }}
+          # role: ${{ secrets.AWS_ROLE }}
           runtime: python3.9
           dry_run: false
           environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }}

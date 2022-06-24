@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 
@@ -37,6 +38,11 @@ def lambda_handler(event, context):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Test Lambda Function locally')
+    parser.add_argument('--json', type=str, help='Test data in JSON format')
+    args = parser.parse_args()
 
-    data = latent_diffusion("sunset over a lake in the mountains")
-    print(data)
+    with open(args.json) as f:
+        event = json.load(f)
+        result = lambda_handler(event, None)
+        print(result)

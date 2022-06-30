@@ -43,25 +43,26 @@ def slack_handler(event):
         # https://api.slack.com/events/url_verification
         return make_response(200, body["challenge"])
     elif type == "event_callback":
-        host = event["headers"]["host"]
+        content = event["requestContext"]
+        url = "https://" + content["domainName"] + content["path"]
+        print(f"Redirect URL: {url}")
         try:
             res = requests.post(
-                url=f"https://{host}",
+                url=url,
                 # https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-integration-async.html
                 headers={
-                    "X-Amz-Invocation-Type": "Event",
-                    "Invocation-Type": "Event",
+                    "InvocationType": "Event",
                     "Content-Type": "application/json",
                 },
                 json=body,
                 timeout=0.5, # Hack ignore response to return in 3sec
             )
-            print(f"Response: {res.text()}")
+            print(f"Response: {res}")
         except Exception as e:
             print(f"Error: {e}")
         return make_response(200, {"status": "ok"})
-    else:
-        return make_response(400, {"body": body})
+    # else error
+    return make_response(400, {"body": body})
 
 
 def internal_handler(event):
@@ -89,7 +90,8 @@ def lambda_handler(event, context):
     """
     print(f"Received event: {json.dumps(event)}")
 
-    if "x-slack-signature" in event["headers"]:
+    headers = event["headers"]
+    if "X-Slack-Signature" in headers or "x-slack-signature" in headers:
         return slack_handler(event)
     else:
         return internal_handler(event)

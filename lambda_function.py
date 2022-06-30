@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import requests
 
 from app import slack, text2image
 
@@ -31,14 +32,10 @@ def parse_slack_event(event):
     return channel, user, prompt
 
 
-def lambda_handler(event, context):
-    """
-    Entry point for the Lambda function.
-    """
-    logger.info(f"Received event:\n {json.dumps(event)}")
+def slack_handler(event):
+    print(f"Slack event:\n {json.dumps(event)}")
 
     body = json.loads(event["body"])
-    print(body)
     type = body["type"]
 
     if type == "url_verification":
@@ -46,23 +43,47 @@ def lambda_handler(event, context):
         # https://api.slack.com/events/url_verification
         return make_response(200, body["challenge"])
     elif type == "event_callback":
-        channel, user, prompt = parse_slack_event(body["event"])
-
-        images = text2image.latent_diffusion(prompt, mock=False)
-
-        files = []
-        for index, image in enumerate(images):
-            res = slack.files_upload(filename=f"result-{index}.png", file=image)
-            files.append(res["file"])
-
-        files_markup = " ".join(f"<{file['permalink']}| >" for file in files)
-        slack.chat_postMessage(
-            channel=channel,
-            text=f"<@{user}> Your prompt: {prompt}\nResult: {files_markup}",
+        host = event["headers"]["host"]
+        res = requests.post(
+            url=f"https://{host}",
+            headers={"InvocationType": "Event", "Content-Type": "application/json"},
+            json=body,
         )
-        return make_response(200, {"body": body})
+        print(f"Response: {res.text()}")
+        return make_response(200, {"status": "ok"})
     else:
         return make_response(400, {"body": body})
+
+
+def internal_handler(event):
+    print(f"Internal event:\n {json.dumps(event)}")
+
+    body = json.loads(event["body"])
+    channel, user, prompt = parse_slack_event(body["event"])
+    images = text2image.latent_diffusion(prompt, mock=False)
+    files = []
+    for index, image in enumerate(images):
+        res = slack.files_upload(filename=f"result-{index}.png", file=image)
+        files.append(res["file"])
+
+    files_markup = " ".join(f"<{file['permalink']}| >" for file in files)
+    slack.chat_postMessage(
+        channel=channel,
+        text=f"<@{user}> Your prompt: {prompt}\nResult: {files_markup}",
+    )
+    return make_response(200, {"status": "ok"})
+
+
+def lambda_handler(event, context):
+    """
+    Entry point for the Lambda function.
+    """
+    print(f"Received event:\n {json.dumps(event)}")
+
+    if "x-slack-signature" in event["headers"]:
+        return slack_handler(event)
+    else:
+        return internal_handler(event)
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ jobs:
           # handler: lambda_function.lambda_handler
           # runtime: python3.9
           publish: false
-          environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }},SLACK_BOT_OAUTH_TOKEN=${{ secrets.SLACK_BOT_OAUTH_TOKEN_DEV }},SLACK_VERIFICATION_TOKEN=${{ secrets.SLACK_VERIFICATION_TOKEN_DEV }}
+          environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }},SLACK_BOT_OAUTH_TOKEN=${{ secrets.SLACK_BOT_OAUTH_TOKEN_DEV }},SLACK_VERIFICATION_TOKEN=${{ secrets.SLACK_VERIFICATION_TOKEN_DEV }},REPLICATE_API_TOKEN=${{ secrets.REPLICATE_API_TOKEN }}
       - name: Deploy to PROD
         uses: appleboy/lambda-action@master
         with:
@@ -44,4 +44,4 @@ jobs:
           # handler: lambda_function.lambda_handler
           # runtime: python3.9
           publish: false
-          environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }},SLACK_BOT_OAUTH_TOKEN=${{ secrets.SLACK_BOT_OAUTH_TOKEN }},SLACK_VERIFICATION_TOKEN=${{ secrets.SLACK_VERIFICATION_TOKEN }}
+          environment: HUGGINGFACE_API_TOKEN=${{ secrets.HUGGINGFACE_API_TOKEN }},SLACK_BOT_OAUTH_TOKEN=${{ secrets.SLACK_BOT_OAUTH_TOKEN }},SLACK_VERIFICATION_TOKEN=${{ secrets.SLACK_VERIFICATION_TOKEN }},REPLICATE_API_TOKEN=${{ secrets.REPLICATE_API_TOKEN }}

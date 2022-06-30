@@ -1,15 +1,11 @@
 import argparse
 import base64
 import json
-from urllib import response
+import replicate
 import requests
 from huggingface_hub.inference_api import InferenceApi
 
 from . import Config
-
-
-# inference = InferenceApi(repo_id="bert-base-uncased", token=Config.HUGGINGFACE_API_TOKEN)
-# print(inference)
 
 
 def distilbert_base_uncased(payload):
@@ -19,13 +15,28 @@ def distilbert_base_uncased(payload):
     return response.json()
 
 
-def dallemini(prompt):
-    headers = {"Authorization": f"Bearer {Config.HUGGINGFACE_API_TOKEN}"}
-    API_URL = f"https://hf.space/embed/eetn/DALL-E/+/api/predict/"
-    json = {"data": [prompt]}
-    response = requests.post(API_URL, headers=headers, json=json)
-    print(response)
-    return response.json()
+def dalle_mini(prompt: str, mock=False):
+    """
+    Dalle Mini model
+    https://replicate.com/borisdayma/dalle-mini
+    """
+
+    response = None
+
+    if mock:
+        response = mock_response("test/dalle_mini.json")
+    else:
+        print(f"prompt: {prompt}")
+        model = replicate.models.get("borisdayma/dalle-mini")
+        results = model.predict(prompt=prompt)
+
+        # for debug
+        # save_response(res, "test/dalle_mini.json")
+        # response = res.json()
+        print(f"dalle_mini json: {results}")
+        for result in results:
+            print(f"dalle_mini result: {result}")
+    return response
 
 
 def latent_diffusion(
@@ -42,12 +53,12 @@ def latent_diffusion(
     https://hf.space/embed/multimodalart/latentdiffusion/api
     """
 
-    res = None
+    response = None
 
     if mock:
-        res = mock_response("test/latent_diffusion.json")
+        response = mock_response("test/latent_diffusion.json")
     else:
-        response = requests.post(
+        res = requests.post(
             url="https://hf.space/embed/multimodalart/latentdiffusion/+/api/predict/",
             headers={"Authorization": f"Bearer {Config.HUGGINGFACE_API_TOKEN}"},
             json={
@@ -61,13 +72,13 @@ def latent_diffusion(
                 ]
             },
         )
-        res = response.json()
-        print(f"latent_diffusion json: {json.dumps(res)}")
+        response = res.json()
+        print(f"latent_diffusion json: {json.dumps(response)}")
 
         # for debug
-        # save_response(response, "test/latent_diffusion.json")
+        # save_response(res, "test/latent_diffusion.json")
 
-    return find_images(res["data"][1])
+    return find_images(response["data"][1])
 
 
 def save_response(response, filename):
@@ -106,12 +117,5 @@ if __name__ == "__main__":
     parser.add_argument("--json", type=str, help="Test data in JSON format")
     args = parser.parse_args()
 
-    images = []
-    with open(args.json, "r", encoding="utf-8") as f:
-        response = json.load(f)
-        images.extend(find_images(response["data"][1]))
-
-    for index, image in enumerate(images):
-        with open(f"test/image{index}.png", "wb") as f:
-            f.write(image)
-    print(f"Saved {len(images)} images")
+    res = dalle_mini("An astronaut riding a horse in a photorealistic style")
+    print(res)

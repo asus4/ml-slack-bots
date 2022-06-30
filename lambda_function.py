@@ -25,12 +25,17 @@ def post_slack(channel: str, user: str, message: str, attachments: list = None):
     text = f"<@{user}> {message}"
 
     if attachments is not None:
-        files = []
+        links = []
         for index, attachment in enumerate(attachments):
-            res = slack.files_upload(filename=f"result-{index}.png", file=attachment)
-            files.append(res["file"])
-        files_markup = " ".join(f"<{file['permalink']}| >" for file in files)
-        text += f"\nFiles: {files_markup}"
+            if (attachment is str) and attachment.startswith("https://"):
+                links.append(attachment)
+            else:
+                res = slack.files_upload(
+                    filename=f"result-{index}.png", file=attachment
+                )
+                links.append(res["file"]["permalink"])
+        links_markup = " ".join(f"<{link}| >" for link in links)
+        text += f"\nFiles: {links_markup}"
 
     return slack.chat_postMessage(channel=channel, text=text)
 
@@ -58,17 +63,22 @@ def slack_handler(event):
             channel = slack_event["channel"]
             user = slack_event["user"]
             usage = """Usage: 
-Type commands below to use the ML playground:
+Type commands below to try ML model:
 
+- Try dalle-mini:
+`/ml_dalle_mini your_prompt`
 
-- Latent Diffusion Model:
+- Try Latent Diffusion Model:
 `/ml_latent_diffusion your_prompt`
+
 
 使い方. コマンドで好きなモデルを試せるよ
 
+- Dalle-Mini を試したい時：
+`/ml_dalle_mini 英語で文章`
+
 - Latent Diffusion Modelを試したい時:
 `/ml_latent_diffusion 英語で文章`
-
 """
             slack.chat_postMessage(
                 channel=channel,
@@ -125,8 +135,11 @@ def internal_handler(event):
     attachments = None
 
     if command == "/ml_latent_diffusion":
-        message = f"Your prompt: {text}"
+        message = f"{command} prompt: {text}"
         attachments = text2image.latent_diffusion(text, mock=False)
+    elif command == "/ml_dalle_mini":
+        message = f"{command} prompt: {text}"
+        attachments = text2image.dalle_mini(text, mock=False)
     else:
         return make_response(400, {"error": "Unknown command"})
 

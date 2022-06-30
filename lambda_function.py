@@ -33,7 +33,7 @@ def parse_slack_event(event):
 
 
 def slack_handler(event):
-    print(f"Slack event:\n {json.dumps(event)}")
+    print(f"Slack event: {json.dumps(event)}")
 
     body = json.loads(event["body"])
     type = body["type"]
@@ -44,19 +44,28 @@ def slack_handler(event):
         return make_response(200, body["challenge"])
     elif type == "event_callback":
         host = event["headers"]["host"]
-        res = requests.post(
-            url=f"https://{host}",
-            headers={"InvocationType": "Event", "Content-Type": "application/json"},
-            json=body,
-        )
-        print(f"Response: {res.text()}")
+        try:
+            res = requests.post(
+                url=f"https://{host}",
+                # https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-integration-async.html
+                headers={
+                    "X-Amz-Invocation-Type": "Event",
+                    "Invocation-Type": "Event",
+                    "Content-Type": "application/json",
+                },
+                json=body,
+                timeout=0.5, # Hack ignore response to return in 3sec
+            )
+            print(f"Response: {res.text()}")
+        except Exception as e:
+            print(f"Error: {e}")
         return make_response(200, {"status": "ok"})
     else:
         return make_response(400, {"body": body})
 
 
 def internal_handler(event):
-    print(f"Internal event:\n {json.dumps(event)}")
+    print(f"Internal event: {json.dumps(event)}")
 
     body = json.loads(event["body"])
     channel, user, prompt = parse_slack_event(body["event"])
@@ -78,7 +87,7 @@ def lambda_handler(event, context):
     """
     Entry point for the Lambda function.
     """
-    print(f"Received event:\n {json.dumps(event)}")
+    print(f"Received event: {json.dumps(event)}")
 
     if "x-slack-signature" in event["headers"]:
         return slack_handler(event)

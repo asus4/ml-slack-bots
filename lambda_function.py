@@ -1,45 +1,41 @@
 import argparse
 import json
 import logging
-import requests
 
-from app import Config
+from app import slack, text2image
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def make_response(err, res=None):
-    ret = {
-        "statusCode": "200",
-        "body": json.dumps(res, ensure_ascii=False),
+def make_response(code: int, message: str):
+    is_string = type(message) == str
+    return {
+        "statusCode": code,
         "headers": {
-            "Content-Type": "application/json",
+            "Content-Type": "text/plain" if is_string else "application/json",
         },
+        "body": message if is_string else json.dumps(message, ensure_ascii=False),
     }
-    logger.info(f"Return: {ret}")
-    return ret
 
 
-def post_slack(channel, message):
-    res = requests.post(
-        url="https://slack.com/api/chat.postMessage",
-        headers={
-            "Content-Type": "application/json; charset=UTF-8",
-            "Authorization": f"Bearer {Config.SLACK_BOT_OAUTH_TOKEN}",
-        },
-        json={
-            "token": Config.SLACK_VERIFICATION_TOKEN,
-            "channel": channel,
-            "text": message,
-        },
-    )
-    logger.info(f"status: {res.status_code} content: {res.content}")
-    return res.status_code == 200
+def parse_slack_event(event):
+    """
+    Parse a Slack mention and return the user ID.
+    """
+    channel = event["channel"]
+    user = event["user"]
+    text_args = event["text"].split(" ")
+    prompt = " ".join(text_args[1:])
+
+    return channel, user, prompt
 
 
 def lambda_handler(event, context):
-    logger.info(f"Received event: {json.dumps(event)}")
+    """
+    Entry point for the Lambda function.
+    """
+    logger.info(f"Received event:\n {json.dumps(event)}")
 
     body = json.loads(event["body"])
     print(body)
@@ -48,20 +44,32 @@ def lambda_handler(event, context):
     if type == "url_verification":
         # Just return the challenge for url_verification
         # https://api.slack.com/events/url_verification
-        return {
-            "statusCode": "200",
-            "body": body["challenge"],
-            "headers": {"Content-Type": "text/plain"},
-        }
+        return make_response(200, body["challenge"])
     elif type == "event_callback":
-        channel = body["event"]["channel"]
-        text_args = body["event"]["text"].split(" ")
-        message = " ".join(text_args[1:])
-        post_slack(channel, message)
-    return make_response(None, body)
+        channel, user, prompt = parse_slack_event(body["event"])
+
+        images = text2image.latent_diffusion(prompt, mock=False)
+
+        files = []
+        for index, image in enumerate(images):
+            res = slack.files_upload(filename=f"result-{index}.png", file=image)
+            files.append(res["file"])
+
+        files_markup = " ".join(f"<{file['permalink']}| >" for file in files)
+        slack.chat_postMessage(
+            channel=channel,
+            text=f"<@{user}> Your prompt: {prompt}\nResult: {files_markup}",
+        )
+        return make_response(200, {"ok": True})
+    else:
+        return make_response(400, {"body": body})
 
 
 if __name__ == "__main__":
+    """
+    Local test with
+    python lambda_function.py --json test_event_data.json
+    """
     parser = argparse.ArgumentParser(description="Test Lambda Function locally")
     parser.add_argument("--json", type=str, help="Test data in JSON format")
     args = parser.parse_args()

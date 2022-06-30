@@ -1,5 +1,8 @@
 #!/bin/bash -x
 
+# Make a zip package to upload it on AWS lambda 
+# with dependencies in requirements.txt
+
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt

@@ -15,7 +15,7 @@ def distilbert_base_uncased(payload):
     return response.json()
 
 
-def dalle_mini(prompt: str, mock=False):
+def dalle_mini(prompt: str, n_predictions=2, mock=False):
     """
     Dalle Mini model
     https://replicate.com/borisdayma/dalle-mini
@@ -28,14 +28,13 @@ def dalle_mini(prompt: str, mock=False):
     else:
         print(f"prompt: {prompt}")
         model = replicate.models.get("borisdayma/dalle-mini")
-        results = model.predict(prompt=prompt)
+        results = model.predict(
+            prompt=prompt,
+            n_predictions=n_predictions,
+        )
 
-        # for debug
-        # save_response(res, "test/dalle_mini.json")
-        # response = res.json()
-        print(f"dalle_mini json: {results}")
-        for result in results:
-            print(f"dalle_mini result: {result}")
+        print(f"dalle_mini results: {results}")
+        response = list((result["image"] for result in results))
     return response
 
 

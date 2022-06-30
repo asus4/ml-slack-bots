@@ -21,21 +21,20 @@ def normalize_header_case(header: dict):
     return {k.lower(): v for k, v in header.items()}
 
 
-def post_slack(channel: str, user: str, message: str, attachments: list = None):
+def post_slack(
+    channel: str, user: str, message: str, attachments: list = None, links: list = None
+):
     text = f"<@{user}> {message}"
 
     if attachments is not None:
         links = []
         for index, attachment in enumerate(attachments):
-            if (attachment is str) and attachment.startswith("https://"):
-                links.append(attachment)
-            else:
-                res = slack.files_upload(
-                    filename=f"result-{index}.png", file=attachment
-                )
-                links.append(res["file"]["permalink"])
+            res = slack.files_upload(filename=f"result-{index}.png", file=attachment)
+            links.append(res["file"]["permalink"])
+
+    if links is not None:
         links_markup = " ".join(f"<{link}| >" for link in links)
-        text += f"\nFiles: {links_markup}"
+        text += f"\nLinks: {links_markup}"
 
     return slack.chat_postMessage(channel=channel, text=text)
 
@@ -115,7 +114,7 @@ Type commands below to try ML model:
             print(f"Response: {res}")
         except Exception as e:
             print(f"Error: {e}")
-        return make_response(200, f"Received your request: {text}")
+        return make_response(200, f"Received your request: {command} {text}")
     # Unknown request
     print(f"Unknown request: {json.dumps(event)}")
     return make_response(400, {"error": "Unknown request"})
@@ -133,13 +132,14 @@ def internal_handler(event):
 
     message = ""
     attachments = None
+    links = None
 
     if command == "/ml_latent_diffusion":
-        message = f"{command} prompt: {text}"
+        message = f"`{command}`\nPrompt: {text}"
         attachments = text2image.latent_diffusion(text, mock=False)
     elif command == "/ml_dalle_mini":
-        message = f"{command} prompt: {text}"
-        attachments = text2image.dalle_mini(text, mock=False)
+        message = f"`{command}`\nPrompt: {text}"
+        links = text2image.dalle_mini(text, mock=False)
     else:
         return make_response(400, {"error": "Unknown command"})
 
@@ -148,6 +148,7 @@ def internal_handler(event):
         user=user,
         message=message,
         attachments=attachments,
+        links=links,
     )
     return make_response(200, {"status": "ok"})
 

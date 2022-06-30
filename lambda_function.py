@@ -60,7 +60,7 @@ def lambda_handler(event, context):
             channel=channel,
             text=f"<@{user}> Your prompt: {prompt}\nResult: {files_markup}",
         )
-        return make_response(200, {"ok": True})
+        return make_response(200, {"body": body})
     else:
         return make_response(400, {"body": body})
 

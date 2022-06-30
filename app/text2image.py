@@ -62,6 +62,7 @@ def latent_diffusion(
             },
         )
         res = response.json()
+        print(f"latent_diffusion json: {json.dumps(res)}")
 
         # for debug
         # save_response(response, "test/latent_diffusion.json")

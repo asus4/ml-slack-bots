@@ -1,13 +1,9 @@
 import argparse
 import json
-import logging
-from urllib.parse import parse_qs
+from urllib.parse import parse_qsl
 import requests
 
 from app import slack, text2image
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def make_response(code: int, message: str):
@@ -28,7 +24,7 @@ def normalize_header_case(header: dict):
 def post_slack(channel: str, user: str, message: str, attachments: list = None):
     text = f"<@{user}> {message}"
 
-    if attachments is None:
+    if attachments is not None:
         files = []
         for index, attachment in enumerate(attachments):
             res = slack.files_upload(filename=f"result-{index}.png", file=attachment)
@@ -47,7 +43,7 @@ def slack_handler(event):
     body = (
         json.loads(event["body"])
         if content_type == "application/json"
-        else parse_qs(event["body"])
+        else dict(parse_qsl(event["body"]))
     )
 
     if content_type == "application/json":
@@ -62,14 +58,18 @@ def slack_handler(event):
             channel = slack_event["channel"]
             user = slack_event["user"]
             usage = """Usage: 
-            Type commands below to use the ML playground:
+Type commands below to use the ML playground:
 
-            ## Text to Image Models
 
-            - Latent Diffusion Model:
-            `/ml_latent_diffusion <your_prompt>`
+- Latent Diffusion Model:
+`/ml_latent_diffusion your_prompt`
 
-            """
+使い方. コマンドで好きなモデルを試せるよ
+
+- Latent Diffusion Modelを試したい時:
+`/ml_latent_diffusion 英語で文章`
+
+"""
             slack.chat_postMessage(
                 channel=channel,
                 text=f"<@{user}> {usage}",
@@ -84,6 +84,8 @@ def slack_handler(event):
         # As the slack api requires the response in 3000ms,
         request_content = event["requestContext"]
         url = "https://" + request_content["domainName"] + request_content["path"]
+        command = body["command"]
+        text = body["text"]
         try:
             res = requests.post(
                 url=url,
@@ -95,15 +97,15 @@ def slack_handler(event):
                 json={
                     "channel": body["channel_id"],
                     "user": body["user_id"],
-                    "command": body["command"],
-                    "text": body["text"],
+                    "command": command,
+                    "text": text,
                 },
-                # timeout=0.5,  # Hack ignore response to return in 3sec
+                timeout=0.5,  # Hack ignore response to return in 3sec
             )
             print(f"Response: {res}")
         except Exception as e:
             print(f"Error: {e}")
-        return make_response(200, {"status": "ok"})
+        return make_response(200, f"Received your request: {text}")
     # Unknown request
     print(f"Unknown request: {json.dumps(event)}")
     return make_response(400, {"error": "Unknown request"})

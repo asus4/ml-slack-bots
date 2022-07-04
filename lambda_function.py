@@ -171,7 +171,7 @@ def internal_handler(event):
     elif command == "/ml_dalle_mini":
         links = args.func(args)
     elif command == "/ml_cogview2":
-        attachments = args.func(args)
+        links = args.func(args)
     else:
         return make_response(
             400,

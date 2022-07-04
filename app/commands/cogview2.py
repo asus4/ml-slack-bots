@@ -44,7 +44,7 @@ class CogView2(BaseCommand):
         print(f"prompt: {args.prompt}")
         model = replicate.models.get("thudm/cogview2")
         results = model.predict(
-            prompt=args.prompt,
+            prompt=self.merge_prompt(args.prompt),
             style=args.style,
         )
 

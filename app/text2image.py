@@ -15,27 +15,51 @@ def distilbert_base_uncased(payload):
     return response.json()
 
 
-def dalle_mini(prompt: str, n_predictions=2, mock=False):
+def dalle_mini(prompt: str, n_predictions=4):
     """
     Dalle Mini model
     https://replicate.com/borisdayma/dalle-mini
     """
 
-    response = None
+    print(f"prompt: {prompt}")
+    model = replicate.models.get("borisdayma/dalle-mini")
+    results = model.predict(
+        prompt=prompt,
+        n_predictions=n_predictions,
+    )
 
-    if mock:
-        response = mock_response("test/dalle_mini.json")
-    else:
-        print(f"prompt: {prompt}")
-        model = replicate.models.get("borisdayma/dalle-mini")
-        results = model.predict(
-            prompt=prompt,
-            n_predictions=n_predictions,
-        )
+    print(f"dalle_mini results: {results}")
+    return list((result["image"] for result in results))
 
-        print(f"dalle_mini results: {results}")
-        response = list((result["image"] for result in results))
-    return response
+
+def cogview2(prompt: str, style="mainbody"):
+    """
+    Cog View2 model
+    https://replicate.com/thudm/cogview2
+
+    Available styles:
+
+    none
+    mainbody
+    photo
+    flat
+    comics
+    oil
+    sketch
+    isometric
+    chinese
+    watercolor
+    """
+
+    print(f"prompt: {prompt}")
+    model = replicate.models.get("thudm/cogview2")
+    results = model.predict(
+        prompt=prompt,
+        style=style,
+    )
+
+    print(f"cogview2 results: {results}")
+    return list((result["image"] for result in results))
 
 
 def latent_diffusion(
@@ -43,7 +67,7 @@ def latent_diffusion(
     steps=50,
     width=256,
     height=256,
-    images=2,
+    images=4,
     diversity_scale=5,
     mock=False,
 ):
@@ -113,8 +137,35 @@ if __name__ == "__main__":
     python -m app.text2image --json test/latent_diffusion.json
     """
     parser = argparse.ArgumentParser(description="Test Lambda Function locally")
-    parser.add_argument("--json", type=str, help="Test data in JSON format")
+    parser.add_argument("prompt", metavar='prompt', type=str, nargs='+', help="Prompt to generate images for")
+    parser.add_argument(
+        "--style",
+        default="mainbody",
+        help="Style",
+        choices=[
+            "none",
+            "mainbody",
+            "photo",
+            "flat",
+            "comics",
+            "oil",
+            "sketch",
+            "isometric",
+            "chinese",
+            "watercolor",
+        ],
+    )
+    subs = parser.add_subparsers(dest="command")
+    subs.add_parser()
     args = parser.parse_args()
+    print(args)
+    # parser.add_argument("--json", type=str, help="Test data in JSON format")
+    # args = parser.parse_args()
 
-    res = dalle_mini("An astronaut riding a horse in a photorealistic style")
-    print(res)
+    # res = dalle_mini("An astronaut riding a horse in a photorealistic style")
+    # print(res)
+
+    # inference = InferenceApi(
+    #     repo_id="apol/dalle-mini", token=Config.HUGGINGFACE_API_TOKEN
+    # )
+    # print(inference)

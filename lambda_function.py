@@ -3,7 +3,46 @@ import json
 from urllib.parse import parse_qsl
 import requests
 
-from app import slack, text2image
+
+from app import slack, commands
+
+_USAGE = """Usage: 
+Type either of the following commands to try ML model:
+
+- Try Dalle Mini: A smaller version of Dalle.
+`/ml_dalle_mini YOUR_PROMPT`
+
+- Try Latent Diffusion:
+`/ml_latent_diffusion YOUR_PROMPT`
+
+- Try CogView2:
+`/ml_cogview2 YOUR_PROMPT --style chinese`
+
+CogView2 accepts style argument:
+mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
+
+
+使い方. コマンドで好きなモデルを試せるよ
+
+- Dalle-Mini を試したい時：
+`/ml_dalle_mini 英語で文章`
+
+- Latent Diffusion Modelを試したい時:
+`/ml_latent_diffusion 英語で文章`
+
+- CogView2を試したい時:
+`/ml_cogview2 英語で文章 --style chinese`
+
+styleには以下のいずれかを指定することができます:
+mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
+
+"""
+
+active_commands: dict[str, commands.BaseCommand] = {
+    "dalle_mini": commands.DalleMini(),
+    "latent_diffusion": commands.LatentDiffusion(),
+    "cogview2": commands.CogView2(),
+}
 
 
 def make_response(code: int, message: str):
@@ -61,27 +100,9 @@ def slack_handler(event):
             slack_event = body["event"]
             channel = slack_event["channel"]
             user = slack_event["user"]
-            usage = """Usage: 
-Type commands below to try ML model:
-
-- Try dalle-mini:
-`/ml_dalle_mini your_prompt`
-
-- Try Latent Diffusion Model:
-`/ml_latent_diffusion your_prompt`
-
-
-使い方. コマンドで好きなモデルを試せるよ
-
-- Dalle-Mini を試したい時：
-`/ml_dalle_mini 英語で文章`
-
-- Latent Diffusion Modelを試したい時:
-`/ml_latent_diffusion 英語で文章`
-"""
             slack.chat_postMessage(
                 channel=channel,
-                text=f"<@{user}> {usage}",
+                text=f"<@{user}> {_USAGE}",
             )
             return make_response(200, {"status": "ok"})
         # else error
@@ -130,18 +151,35 @@ def internal_handler(event):
     user = body["user"]
     text = body["text"]
 
-    message = ""
+    message = f"`{command}`\nPrompt: {text}"
+
+    parser = argparse.ArgumentParser(description="ML Playground")
+    subparser = parser.add_subparsers(title="command")
+
+    for key, cmd in active_commands.items():
+        cmd.add_subparser(subparser)
+
+    raw_args = text.split(" ")
+    raw_args.insert(0, command.replace("/ml_", ""))
+    args = parser.parse_args(raw_args)
+
     attachments = None
     links = None
 
     if command == "/ml_latent_diffusion":
-        message = f"`{command}`\nPrompt: {text}"
-        attachments = text2image.latent_diffusion(text, mock=False)
+        attachments = args.func(args)
     elif command == "/ml_dalle_mini":
-        message = f"`{command}`\nPrompt: {text}"
-        links = text2image.dalle_mini(text, mock=False)
+        links = args.func(args)
+    elif command == "/ml_cogview2":
+        attachments = args.func(args)
     else:
-        return make_response(400, {"error": "Unknown command"})
+        return make_response(
+            400,
+            {
+                "error": "Unknown command",
+                "text": text,
+            },
+        )
 
     post_slack(
         channel=channel,
@@ -161,6 +199,12 @@ def lambda_handler(event, context):
 
     headers = normalize_header_case(event["headers"])
     event["headers"] = headers
+
+    if "X-Slack-Retry-Num" in headers:
+        # Slack API retries if it doesn't get a response in 3000ms
+        # Ignore retry event
+        print("Ignoring retry event")
+        return make_response(200, {"status": "ok"})
 
     if "x-slack-signature" in headers:
         return slack_handler(event)

@@ -172,6 +172,8 @@ def internal_handler(event):
         links = args.func(args)
     elif command == "/ml_cogview2":
         links = args.func(args)
+        # take first 4 items
+        links = links[:4]
     else:
         return make_response(
             400,

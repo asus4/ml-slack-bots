@@ -5,6 +5,7 @@ Examples of Slack Bots that runs ML tasks via [Replicate](https://replicate.com/
 Supported models:
 
 - [dalle-mini](https://replicate.com/borisdayma/dalle-mini)
+- [min-dalle](https://replicate.com/kuprel/min-dalle)
 - [cogview2](https://replicate.com/thudm/cogview2)
 - [latent-diffusion](https://huggingface.co/spaces/multimodalart/latentdiffusion)
 

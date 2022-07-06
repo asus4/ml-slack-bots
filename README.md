@@ -8,6 +8,8 @@ Supported models:
 - [min-dalle](https://replicate.com/kuprel/min-dalle)
 - [cogview2](https://replicate.com/thudm/cogview2)
 - [latent-diffusion](https://huggingface.co/spaces/multimodalart/latentdiffusion)
+- [OpenAI text-davinci-002](https://beta.openai.com/examples/)
+- [erlich](https://replicate.com/laion-ai/erlich)
 
 ## How to use
 

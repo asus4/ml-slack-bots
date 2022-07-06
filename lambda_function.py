@@ -6,6 +6,14 @@ import requests
 
 from app import slack, commands
 
+active_commands: dict[str, commands.BaseCommand] = {
+    "dalle_mini": commands.DalleMini(),
+    "dalle_mega": commands.DalleMega(),
+    "latent_diffusion": commands.LatentDiffusion(),
+    "cogview2": commands.CogView2(),
+    "erlich_logo": commands.Erlich(),
+}
+
 _USAGE = """Usage: 
 Type either of the following commands to try ML model:
 
@@ -24,6 +32,10 @@ Type either of the following commands to try ML model:
 CogView2 accepts style argument:
 mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
+- Try Erlich Logo Generator:
+`/ml_erlich_logo YOUR_PROMPT`
+
+---
 
 使い方. コマンドで好きなモデルを試せるよ
 
@@ -42,14 +54,10 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 styleには以下のいずれかを指定することができます:
 mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
-"""
+- Erlich Logo Generatorを試したい時:
+`/ml_erlich_logo 英語で文章`
 
-active_commands: dict[str, commands.BaseCommand] = {
-    "dalle_mini": commands.DalleMini(),
-    "dalle_mega": commands.DalleMega(),
-    "latent_diffusion": commands.LatentDiffusion(),
-    "cogview2": commands.CogView2(),
-}
+"""
 
 
 def make_response(code: int, message: str):
@@ -183,6 +191,8 @@ def internal_handler(event):
         links = args.func(args)
         # take first 4 items
         links = links[:4]
+    elif command == "/ml_erlich_logo":
+        links = args.func(args)
     else:
         return make_response(
             400,

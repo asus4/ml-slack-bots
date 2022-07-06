@@ -12,6 +12,7 @@ active_commands: dict[str, commands.BaseCommand] = {
     "latent_diffusion": commands.LatentDiffusion(),
     "cogview2": commands.CogView2(),
     "erlich_logo": commands.Erlich(),
+    "davinci": commands.Davinci(),
 }
 
 _USAGE = """Usage: 
@@ -35,6 +36,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 - Try Erlich Logo Generator:
 `/ml_erlich_logo YOUR_PROMPT`
 
+- Try Davinci:
+`/ml_davinci YOUR_PROMPT`
+
 ---
 
 使い方. コマンドで好きなモデルを試せるよ
@@ -56,6 +60,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
 - Erlich Logo Generatorを試したい時:
 `/ml_erlich_logo 英語で文章`
+
+- Davinciを試したい時:
+`/ml_davinci 英語で文章`
 
 """
 
@@ -193,6 +200,9 @@ def internal_handler(event):
         links = links[:4]
     elif command == "/ml_erlich_logo":
         links = args.func(args)
+    elif command == "/ml_davinci":
+        result = args.func(args)
+        message = f"`{command}`\nPrompt: {text}\n\nResult:\n{result}"
     else:
         return make_response(
             400,

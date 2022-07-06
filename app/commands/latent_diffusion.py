@@ -1,10 +1,10 @@
-from argparse import _SubParsersAction
+import argparse
 import base64
 import json
 import requests
 
-from .. import Config
 from . import BaseCommand
+from .. import Config
 
 
 def find_images(obj):
@@ -30,7 +30,7 @@ class LatentDiffusion(BaseCommand):
     https://hf.space/embed/multimodalart/latentdiffusion/api
     """
 
-    def add_subparser(self, subparsers: _SubParsersAction):
+    def add_subparser(self, subparsers: argparse._SubParsersAction):
         parser = subparsers.add_parser("latent_diffusion", help="Latent Diffusion")
         parser.add_argument(
             "prompt", type=str, nargs="+", help="Prompt to generate images for"

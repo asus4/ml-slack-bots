@@ -9,6 +9,9 @@ from app import slack, commands
 _USAGE = """Usage: 
 Type either of the following commands to try ML model:
 
+- Try Dalle Mega: A mega version of Dalle.
+`/ml_dalle_mega YOUR_PROMPT`
+
 - Try Dalle Mini: A smaller version of Dalle.
 `/ml_dalle_mini YOUR_PROMPT`
 
@@ -23,6 +26,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
 
 使い方. コマンドで好きなモデルを試せるよ
+
+- Dalle-Mega を試したい時：
+`/ml_dalle_mega 英語で文章`
 
 - Dalle-Mini を試したい時：
 `/ml_dalle_mini 英語で文章`
@@ -40,6 +46,7 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
 active_commands: dict[str, commands.BaseCommand] = {
     "dalle_mini": commands.DalleMini(),
+    "dalle_mega": commands.DalleMega(),
     "latent_diffusion": commands.LatentDiffusion(),
     "cogview2": commands.CogView2(),
 }
@@ -169,6 +176,8 @@ def internal_handler(event):
     if command == "/ml_latent_diffusion":
         attachments = args.func(args)
     elif command == "/ml_dalle_mini":
+        links = args.func(args)
+    elif command == "/ml_dalle_mega":
         links = args.func(args)
     elif command == "/ml_cogview2":
         links = args.func(args)

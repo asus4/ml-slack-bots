@@ -1,17 +1,18 @@
 from abc import ABC, abstractmethod
+import argparse
 import json
 
 
 class BaseCommand(ABC):
     @abstractmethod
-    def add_subparser(self, parent_parser):
+    def add_subparser(self, subparsers: argparse._SubParsersAction):
         pass
 
     @abstractmethod
     def execute(self, args):
         pass
 
-    def save_response(self, response, filename):
+    def save_response(self, response, filename: str):
         with open(filename, "wb") as f:
             f.write(response.content)
 

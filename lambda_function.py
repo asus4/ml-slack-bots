@@ -41,7 +41,7 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 `/ml_davinci YOUR_PROMPT`
 
 - Try Rinna GPT2 Medium:
-`/ml_rinna_gpt2m YOUR_PROMPT`
+`/ml_rinna_gpt2m JAPANESE_PROMPT`
 
 ---
 
@@ -69,7 +69,7 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 `/ml_davinci 英語で文章`
 
 - Rinna GPT2 Mediumを試したい時:
-`/ml_rinna_gpt2m 英語で文章`
+`/ml_rinna_gpt2m 日本語で文章`
 
 """
 

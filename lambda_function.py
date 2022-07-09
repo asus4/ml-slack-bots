@@ -13,6 +13,7 @@ active_commands: dict[str, commands.BaseCommand] = {
     "cogview2": commands.CogView2(),
     "erlich_logo": commands.Erlich(),
     "davinci": commands.Davinci(),
+    "rinna_gpt2m": commands.RinnaGpt2Medium(),
 }
 
 _USAGE = """Usage: 
@@ -39,6 +40,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 - Try Davinci:
 `/ml_davinci YOUR_PROMPT`
 
+- Try Rinna GPT2 Medium:
+`/ml_rinna_gpt2m YOUR_PROMPT`
+
 ---
 
 使い方. コマンドで好きなモデルを試せるよ
@@ -63,6 +67,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 
 - Davinciを試したい時:
 `/ml_davinci 英語で文章`
+
+- Rinna GPT2 Mediumを試したい時:
+`/ml_rinna_gpt2m 英語で文章`
 
 """
 
@@ -196,11 +203,15 @@ def internal_handler(event):
         links = args.func(args)
     elif command == "/ml_cogview2":
         links = args.func(args)
-        # take first 4 items
+        # Take first 4 items as many links are ignored in Slack
+        # TODO: Upload them to slack then append to attachments?
         links = links[:4]
     elif command == "/ml_erlich_logo":
         links = args.func(args)
     elif command == "/ml_davinci":
+        result = args.func(args)
+        message = f"`{command}`\nPrompt: {text}\n\nResult:\n{result}"
+    elif command == "/ml_rinna_gpt2m":
         result = args.func(args)
         message = f"`{command}`\nPrompt: {text}\n\nResult:\n{result}"
     else:

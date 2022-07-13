@@ -46,5 +46,6 @@ class DalleMega(BaseCommand):
             log2_supercondition_factor=args.log2_supercondition_factor,
         )
 
-        print(f"dalle_mega results: {results}")
-        return list((result for result in results))
+        resultsList = list(results)
+        print(f"dalle_mega results: {resultsList}")
+        return [resultsList.pop()]

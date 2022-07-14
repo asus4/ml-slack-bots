@@ -27,9 +27,9 @@ class DalleMega(BaseCommand):
             action=argparse.BooleanOptionalAction,
         )
         parser.add_argument(
-            "--log2_supercondition_factor",
+            "--supercondition_factor",
             type=int,
-            default=4,
+            default=16,
             help="Higher values result in better agreement with the text but a narrower variety of generated images (minimum: 1; maximum: 6)",
         )
 
@@ -43,7 +43,7 @@ class DalleMega(BaseCommand):
             text=self.merge_prompt(args.prompt),
             grid_size=args.grid_size,
             intermediate_outputs=args.intermediate_outputs,
-            log2_supercondition_factor=args.log2_supercondition_factor,
+            supercondition_factor=args.supercondition_factor,
         )
 
         resultsList = list(results)

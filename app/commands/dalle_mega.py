@@ -29,7 +29,7 @@ class DalleMega(BaseCommand):
         parser.add_argument(
             "--supercondition_factor",
             type=int,
-            default=16,
+            default=8,
             help="Higher values result in better agreement with the text but a narrower variety of generated images (minimum: 1; maximum: 6)",
         )
 

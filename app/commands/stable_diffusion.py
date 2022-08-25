@@ -18,7 +18,7 @@ class StableDiffusion(BaseCommand):
         parser.add_argument(
             "--num_outputs",
             type=int,
-            default=1,
+            default=4,
             help="Number of images to output",
             choices=[1, 4],
         )

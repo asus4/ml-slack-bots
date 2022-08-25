@@ -25,7 +25,7 @@ class StableDiffusion(BaseCommand):
         parser.add_argument(
             "--num_inference_steps",
             type=int,
-            default=200,
+            default=100,
             help="Size of the image grid (minimum: 1; maximum: 500)",
         )
         parser.add_argument(

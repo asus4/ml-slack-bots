@@ -14,10 +14,14 @@ active_commands: dict[str, commands.BaseCommand] = {
     "erlich_logo": commands.Erlich(),
     "davinci": commands.Davinci(),
     "rinna_gpt2m": commands.RinnaGpt2Medium(),
+    "stable_diffusion": commands.StableDiffusion(),
 }
 
 _USAGE = """Usage: 
 Type either of the following commands to try ML model:
+
+- Try Stable Diffusion:
+`/ml_stable_diffusion YOUR_PROMPT`
 
 - Try Dalle Mega: A mega version of Dalle.
 `/ml_dalle_mega YOUR_PROMPT`
@@ -46,6 +50,9 @@ mainbody, photo, flat, comics, oil, sketch, isometric, chinese or watercolor
 ---
 
 使い方. コマンドで好きなモデルを試せるよ
+
+- Stable Diffusion を試したい時:
+`/ml_stable_diffusion 英語で文章`
 
 - Dalle-Mega を試したい時：
 `/ml_dalle_mega 英語で文章`
@@ -200,6 +207,8 @@ def internal_handler(event):
     elif command == "/ml_dalle_mini":
         links = args.func(args)
     elif command == "/ml_dalle_mega":
+        links = args.func(args)
+    elif command == "/ml_stable_diffusion":
         links = args.func(args)
     elif command == "/ml_cogview2":
         links = args.func(args)

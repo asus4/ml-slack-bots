@@ -4,7 +4,6 @@ Examples of Slack Bots that runs ML tasks via [Replicate](https://replicate.com/
 
 ![Screenshot of slack bot](https://user-images.githubusercontent.com/357497/177584534-cc971308-a357-4146-b623-0841ff8108cb.png)
 
-
 Supported models:
 
 - [dalle-mini](https://replicate.com/borisdayma/dalle-mini)
@@ -37,7 +36,8 @@ Supported models:
   - /ml_dalle_mini
   - /ml_latent_diffusion
   - /ml_cogview2
-  - /ml_erlich_logo 
+  - /ml_erlich_logo
   - /ml_davinci
+  - /ml_stable_diffusion
 
 ![Scopes](https://user-images.githubusercontent.com/357497/177586091-4fcb4062-4869-4f38-a09d-49556d8f8f20.png)

@@ -26,7 +26,7 @@ class StableDiffusion(BaseCommand):
             "--num_inference_steps",
             type=int,
             default=100,
-            help="Size of the image grid (minimum: 1; maximum: 500)",
+            help="Number of denoising steps (minimum: 1; maximum: 500)",
         )
         parser.add_argument(
             "--guidance_scale",

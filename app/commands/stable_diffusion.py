@@ -37,14 +37,14 @@ class StableDiffusion(BaseCommand):
         parser.add_argument(
             "--width",
             type=int,
-            default=512,
+            default=256,
             help="Width of output image",
             choices=[128, 256, 512, 768, 1024],
         )
         parser.add_argument(
             "--height",
             type=int,
-            default=512,
+            default=256,
             help="Height of output image",
             choices=[128, 256, 512, 768],
         )
